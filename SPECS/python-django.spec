@@ -1,58 +1,56 @@
-%{?python_enable_dependency_generator}
-# Turn off the brp-python-bytecompile script
-%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
-
-%global         pkgname Django
-
-
-# Tests requiring Internet connections are disabled by default
-# pass --with internet to run them (e.g. when doing a local rebuild
-# for sanity checks before committing)
-%bcond_with internet
-
 Name:           python-django
-
-Version:        2.2.24
+%global         pkgname Django
+%global         ver 3.2.12
+#global         pre ...
+%global         real_version %{ver}%{?pre:%{pre}}
+Version:        %{ver}%{?pre:~%{pre}}
 Release:        1%{?dist}
 Summary:        A high-level Python Web framework
 
 License:        BSD
-URL:            http://www.djangoproject.com/
-Source0:        https://files.pythonhosted.org/packages/source/D/Django/Django-%{version}.tar.gz
-
+URL:            https://www.djangoproject.com/
+Source0:        %{pypi_source %{pkgname} %{real_version}}
 
 # skip tests requiring network connectivity
-Patch000: Django-2.0-skip-net-tests.patch
+Patch000:       Django-2.0-skip-net-tests.patch
 
+# Some tests are failing with Python 3.10, they are disabled temporarily.
+# For more info see: https://bugzilla.redhat.com/show_bug.cgi?id=1898084
+Patch001:       0001-python-3.10-compatibility-disable-failing-tests.patch
 
 BuildArch:      noarch
 
-
-
-%description
+%global _description %{expand:
 Django is a high-level Python Web framework that encourages rapid
 development and a clean, pragmatic design. It focuses on automating as
 much as possible and adhering to the DRY (Don't Repeat Yourself)
-principle.
+principle.}
+
+%description %_description
+
 
 %package bash-completion
-Summary:        bash completion files for Django
+Summary:        Bash completion files for Django
 BuildRequires:  bash-completion
-
+Requires:       bash-completion
 
 %description bash-completion
-This package contains the bash completion files form Django high-level
+This package contains the Bash completion files form Django high-level
 Python Web framework.
+
 
 %package -n python3-django-doc
 Summary:        Documentation for Django
-Requires:       python3-django = %{version}-%{release}
+%{?python_provide:%python_provide python3-django-doc}
+Suggests:       python3-django = %{version}-%{release}
+BuildRequires: make
 BuildRequires:  python3-sphinx
 BuildRequires:  python3-psycopg2
 
 %description -n python3-django-doc
 This package contains the documentation for the Django high-level
 Python Web framework.
+
 
 %package -n python3-django
 Summary:        A high-level Python Web framework
@@ -64,6 +62,7 @@ BuildRequires:  python3-devel
 BuildRequires:  python3-bcrypt
 # test requirements
 #BuildRequires: python3-py-bcrypt
+BuildRequires:  python3-asgiref >= 3.2
 BuildRequires:  python3-docutils
 BuildRequires:  python3-jinja2
 BuildRequires:  python3-mock
@@ -72,85 +71,17 @@ BuildRequires:  python3-pillow
 BuildRequires:  python3-PyYAML
 BuildRequires:  python3-pytz
 BuildRequires:  python3-selenium
-BuildRequires:  python3-sqlparse
+BuildRequires:  python3-setuptools
+BuildRequires:  python3-sqlparse >= 0.2.2
 BuildRequires:  python3-memcached
 
 Provides: bundled(jquery) = 2.2.3
 Provides: bundled(xregexp) = 2.0.0
 
-# /usr/bin/django-admin moved from the python2 package
-Conflicts:   python2-django < 2
-Conflicts:   python-django < 2
-
-# Removed when F28 was rawhide, keep this till F30:
-Obsoletes:   python-django-devserver < 0.8.0-8
-Obsoletes:   python2-django-devserver < 0.8.0-8
-Obsoletes:   python-django-extra-form-fields < 0.0.1-16
-Obsoletes:   python2-django-extra-form-fields < 0.0.1-16
-Obsoletes:   python-django-profiles < 0.2-16
-Obsoletes:   python2-django-profiles < 0.2-16
-Obsoletes:   python-django-model-utils < 3.1.1-3
-Obsoletes:   python2-django-model-utils < 3.1.1-3
-Obsoletes:   python3-django-model-utils < 3.1.1-3
-Obsoletes:   python-django-netjsongraph < 0.2.2-5
-Obsoletes:   python2-django-netjsongraph < 0.2.2-5
-Obsoletes:   python3-django-netjsongraph < 0.2.2-5
-Obsoletes:   python-django-dynamite < 0.4.1-16
-Obsoletes:   python2-django-dynamite < 0.4.1-16
-Obsoletes:   python-django-flash < 1.8-18
-Obsoletes:   python2-django-flash < 1.8-18
-Obsoletes:   python-django-followit < 0.0.3-16
-Obsoletes:   python2-django-followit < 0.0.3-16
-Obsoletes:   python-django-socialregistration < 0.5.10-11
-Obsoletes:   python2-django-socialregistration < 0.5.10-11
-Obsoletes:   python-django-staticfiles < 1.2.1-13
-Obsoletes:   python2-django-staticfiles < 1.2.1-13
-Obsoletes:   python-django-sekizai-doc < 0.8.1-12
-Obsoletes:   python-django-sekizai < 0.8.1-12
-Obsoletes:   python2-django-sekizai < 0.8.1-12
-Obsoletes:   python3-django-sekizai-doc < 0.8.1-12
-Obsoletes:   python3-django-sekizai < 0.8.1-12
-Obsoletes:   python-django-south < 1.0.2-3
-Obsoletes:   python2-django-south < 1.0.2-3
-Obsoletes:   python3-django-south < 1.0.2-3
-Obsoletes:   python-django-pgjson < 0.3.1-7
-Obsoletes:   python2-django-pgjson < 0.3.1-7
-Obsoletes:   python3-django-pgjson < 0.3.1-7
-Obsoletes:   python-django-ckeditor < 5.3.0-4
-Obsoletes:   python2-django-ckeditor < 5.3.0-4
-Obsoletes:   python3-django-ckeditor < 5.3.0-4
-Obsoletes:   python-django-extensions < 1.7.3-6
-Obsoletes:   python2-django-extensions < 1.7.3-6
-Obsoletes:   python3-django-extensions < 1.7.3-6
-Obsoletes:   python-django-extensions-doc < 1.7.3-6
-Obsoletes:   python-django-helpdesk < 0.2.1-3
-Obsoletes:   python2-django-helpdesk < 0.2.1-3
-Obsoletes:   python3-django-helpdesk < 0.2.1-3
-Obsoletes:   python-django-openid-auth < 0.14-4
-Obsoletes:   python2-django-openid-auth < 0.14-4
-Obsoletes:   python3-django-openid-auth < 0.14-4
-Obsoletes:   python-django-pylibmc < 0.6.1-6
-Obsoletes:   python2-django-pylibmc < 0.6.1-6
-Obsoletes:   python3-django-pylibmc < 0.6.1-6
-Obsoletes:   python-django-select2 < 5.8.10-4
-Obsoletes:   python2-django-select2 < 5.8.10-4
-Obsoletes:   python3-django-select2 < 5.8.10-4
-Obsoletes:   python-django-setuptest < 0.2.1-6
-Obsoletes:   python2-django-setuptest < 0.2.1-6
-Obsoletes:   python3-django-setuptest < 0.2.1-6
-Obsoletes:   python-django-federated-login < 1.0.0-16
-Obsoletes:   python2-django-federated-login < 1.0.0-16
-Obsoletes:   python3-django-federated-login < 1.0.0-16
-
-
-%description -n python3-django
-Django is a high-level Python Web framework that encourages rapid
-development and a clean, pragmatic design. It focuses on automating as
-much as possible and adhering to the DRY (Don't Repeat Yourself)
-principle.
+%description -n python3-django %_description
 
 %prep
-%autosetup -p1 -n %{pkgname}-%{version}
+%autosetup -p1 -n %{pkgname}-%{real_version}
 
 # hard-code python3 in django-admin
 pushd django
@@ -158,16 +89,18 @@ for file in bin/django-admin.py conf/project_template/manage.py-tpl ; do
     sed -i "s/\/env python/\/python3/" $file ;
 done
 popd
+
+# Python RPM dependency generator doesn't support ~= yet
+# https://bugzilla.redhat.com/show_bug.cgi?id=1758141
+sed -i 's/asgiref ~= /asgiref >= /' setup.py
+
+
 %build
 %py3_build
 
 
 %install
 %py3_install
-
-# Manually invoke the python byte compile macro for each path that needs byte
-# compilation.
-%py_byte_compile %{__python3} %{buildroot}%{python3_sitelib}
 
 %find_lang django
 %find_lang djangojs
@@ -176,7 +109,6 @@ cat djangojs.lang >> django.lang
 
 
 # build documentation
-export SPHINXBUILD=sphinx-build-3
 (cd docs && mkdir djangohtml && mkdir -p _build/{doctrees,html} && make html)
 cp -ar docs ..
 
@@ -203,7 +135,7 @@ ln -s ./django-admin %{buildroot}%{_bindir}/python3-django-admin
 find $RPM_BUILD_ROOT -name "*.po" | xargs rm -f
 
 %check
-cd %{_builddir}/%{pkgname}-%{version}
+cd %{_builddir}/%{pkgname}-%{real_version}
 export PYTHONPATH=$(pwd)
 cd tests
 
@@ -240,6 +172,7 @@ cd tests
 %dir %{python3_sitelib}/django/conf/
 %dir %{python3_sitelib}/django/conf/locale/
 %dir %{python3_sitelib}/django/conf/locale/??/
+%dir %{python3_sitelib}/django/conf/locale/???/
 %dir %{python3_sitelib}/django/conf/locale/??_*/
 %dir %{python3_sitelib}/django/conf/locale/*/LC_MESSAGES
 %dir %{python3_sitelib}/django/contrib/
@@ -247,6 +180,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/admin/
 %dir %{python3_sitelib}/django/contrib/admin/locale
 %dir %{python3_sitelib}/django/contrib/admin/locale/??/
+%dir %{python3_sitelib}/django/contrib/admin/locale/???/
 %dir %{python3_sitelib}/django/contrib/admin/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/admin/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/admin/*.py*
@@ -258,6 +192,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/admindocs/
 %dir %{python3_sitelib}/django/contrib/admindocs/locale/
 %dir %{python3_sitelib}/django/contrib/admindocs/locale/??/
+%dir %{python3_sitelib}/django/contrib/admindocs/locale/???/
 %dir %{python3_sitelib}/django/contrib/admindocs/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/admindocs/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/admindocs/*.py*
@@ -265,6 +200,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/auth/
 %dir %{python3_sitelib}/django/contrib/auth/locale/
 %dir %{python3_sitelib}/django/contrib/auth/locale/??/
+%dir %{python3_sitelib}/django/contrib/auth/locale/???/
 %dir %{python3_sitelib}/django/contrib/auth/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/auth/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/auth/*.py*
@@ -276,6 +212,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/contenttypes/
 %dir %{python3_sitelib}/django/contrib/contenttypes/locale
 %dir %{python3_sitelib}/django/contrib/contenttypes/locale/??/
+%dir %{python3_sitelib}/django/contrib/contenttypes/locale/???/
 %dir %{python3_sitelib}/django/contrib/contenttypes/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/contenttypes/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/contenttypes/*.py*
@@ -285,6 +222,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/flatpages/
 %dir %{python3_sitelib}/django/contrib/flatpages/locale/
 %dir %{python3_sitelib}/django/contrib/flatpages/locale/??/
+%dir %{python3_sitelib}/django/contrib/flatpages/locale/???/
 %dir %{python3_sitelib}/django/contrib/flatpages/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/flatpages/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/flatpages/*.py*
@@ -293,6 +231,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/gis/
 %dir %{python3_sitelib}/django/contrib/gis/locale/
 %dir %{python3_sitelib}/django/contrib/gis/locale/??/
+%dir %{python3_sitelib}/django/contrib/gis/locale/???/
 %dir %{python3_sitelib}/django/contrib/gis/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/gis/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/gis/*.py*
@@ -302,6 +241,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/humanize/
 %dir %{python3_sitelib}/django/contrib/humanize/locale/
 %dir %{python3_sitelib}/django/contrib/humanize/locale/??/
+%dir %{python3_sitelib}/django/contrib/humanize/locale/???/
 %dir %{python3_sitelib}/django/contrib/humanize/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/humanize/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/humanize/templatetags/
@@ -319,6 +259,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/redirects
 %dir %{python3_sitelib}/django/contrib/redirects/locale
 %dir %{python3_sitelib}/django/contrib/redirects/locale/??/
+%dir %{python3_sitelib}/django/contrib/redirects/locale/???/
 %dir %{python3_sitelib}/django/contrib/redirects/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/redirects/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/redirects/*.py*
@@ -326,6 +267,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/sessions/
 %dir %{python3_sitelib}/django/contrib/sessions/locale/
 %dir %{python3_sitelib}/django/contrib/sessions/locale/??/
+%dir %{python3_sitelib}/django/contrib/sessions/locale/???/
 %dir %{python3_sitelib}/django/contrib/sessions/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/sessions/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/sessions/management/
@@ -335,6 +277,7 @@ cd tests
 %dir %{python3_sitelib}/django/contrib/sites/
 %dir %{python3_sitelib}/django/contrib/sites/locale/
 %dir %{python3_sitelib}/django/contrib/sites/locale/??/
+%dir %{python3_sitelib}/django/contrib/sites/locale/???/
 %dir %{python3_sitelib}/django/contrib/sites/locale/??_*/
 %dir %{python3_sitelib}/django/contrib/sites/locale/*/LC_MESSAGES
 %{python3_sitelib}/django/contrib/sites/*.py*
@@ -364,7 +307,7 @@ cd tests
 %{python3_sitelib}/django/conf/urls/
 %{python3_sitelib}/django/conf/locale/*/*.py*
 %{python3_sitelib}/django/conf/locale/*.py*
-%{python3_sitelib}/%{pkgname}-%{version}-py%{python3_version}.egg-info
+%{python3_sitelib}/%{pkgname}-%{real_version}-py%{python3_version}.egg-info
 %{python3_sitelib}/django/__pycache__
 %{python3_sitelib}/django/bin/__pycache__
 %{python3_sitelib}/django/conf/__pycache__
@@ -383,26 +326,102 @@ cd tests
 
 
 %changelog
-* Wed Sep 08 2021 Alfredo Moralejo <amoralej@redhat.com> - 2.2.24-1
-- Update to 2.2.24
+* Wed Feb 02 2022 Matthias Runge <mrunge@redhat.com> - 3.2.12-1
+- update to 3.2.12
+- fixes CVE-2022-22818, CVE-2022-23833
 
-* Fri Mar 05 2021 Matthias Runge <mrunge@redhat.com> - 2.2.19-1
-- update to 2.2.19, resolve CVE-2021-23336 (rbhz#1931539)
+* Wed Sep 08 2021 Matthias Runge <mrunge@redhat.com> - 3.2.7-1
+- update to 3.2.7 (rhbz#1999958)
 
-* Sun Dec 06 2020 Igor Raits <ignatenkobrain@fedoraproject.org> - 2.2.17-1
-- Update to 2.2.17
+* Mon Aug 09 2021 Matthias Runge <mrunge@redhat.com> - 3.2.6-1
+- update to 3.2.6 (rhbz#1957630)
+- skip failing test AssertionError: "Error: invalid choice: 'test'
+  (choose from 'foo')"(rhbz#1898084)
 
-* Sun Jun 07 2020 Miro Hrončok <mhroncok@redhat.com> - 2.2.13-1
-- Update to 2.2.13
-- Security fix for CVE-2020-7471 (rhbz#1798519)
-- Security fix for CVE-2020-9402 (rhbz#1810094)
-- Security fix for CVE-2020-13254 (rhbz#1843616)
-- Security fix for CVE-2020-13596 (rhbz#1843626)
+* Tue Jul 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.2.1-3
+- Second attempt - Rebuilt for
+  https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
 
-* Tue Jan 07 2020 Matthias Runge <mrunge@redhat.com> - 2.2.9-1
-- fix CVE-2019-19844 (rhbz#1788429)
+* Fri Jun 04 2021 Python Maint <python-maint@redhat.com> - 3.2.1-2
+- Rebuilt for Python 3.10
 
-* Wed Jul 03 2019 Matthias Runge <mrunge@redhat.com> - 2.2.3-1
+* Tue May 04 2021 Matthias Runge <mrunge@redhat.com> - 3.2.1-1
+- rebase to 3.2.1, fixes CVE-2021-31542
+- rebase to 3.1.8 fixes CVE-2021-28658 (rbhz#1946580)
+- rebase to 3.2.1 (rhbz#1917820)
+
+* Fri Mar 05 2021 Matthias Runge <mrunge@redhat.com> - 3.1.7-1
+- update to 3.1.7, fix CVE-2021-23336 (rhbz#1931542)
+
+* Thu Feb 04 2021 Matthias Runge <mrunge@redhat.com> - 3.1.6-1
+- update to 3.1.6, fix CVE-2021-3281 (rhbz#1923734)
+
+* Wed Jan 27 2021 Fedora Release Engineering <releng@fedoraproject.org> - 3.1.5-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
+* Mon Jan 04 2021 Matthias Runge <mrunge@redhat.com> - 3.1.5-1
+- update to 3.1.5
+
+* Thu Dec 03 2020 Matthias Runge <mrunge@redhat.com> - 3.1.4-1
+- update to 3.1.4 (rhbz#1893635)
+
+* Thu Oct 01 2020 Matthias Runge <mrunge@redhat.com> - 3.1.2-1
+- update to 3.1.2 (rhbz#1874420)
+
+* Thu Sep 03 2020 Matthias Runge <mrunge@redhat.com> - 3.1.1-1
+- update to 3.1.1 (rhbz#1874420)
+
+* Sun Aug 30 2020 Igor Raits <ignatenkobrain@fedoraproject.org> - 3.1-1
+- Update to 3.1
+
+* Wed Jul 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.0.7-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
+
+* Wed Jun 24 2020 Michel Alexandre Salim <salimma@fedoraproject.org> - 3.0.7-2
+- Add BR on setuptools
+
+* Sun Jun 07 2020 Miro Hrončok <mhroncok@redhat.com> - 3.0.7-1
+- Update to 3.0.7
+- Security fix for CVE-2020-7471 (rhbz#1798516)
+- Security fix for CVE-2020-9402 (rhbz#1810093)
+- Security fix for CVE-2020-13254 (rhbz#1843617)
+- Security fix for CVE-2020-13596 (rhbz#1843627)
+
+* Mon May 25 2020 Miro Hrončok <mhroncok@redhat.com> - 3.0.2-3
+- Rebuilt for Python 3.9
+
+* Thu Jan 30 2020 Fedora Release Engineering <releng@fedoraproject.org> - 3.0.2-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
+
+* Thu Jan 02 2020 Matthias Runge <mrunge@redhat.com> - 3.0.2-1
+- bugfix release
+
+* Tue Dec 03 2019 Miro Hrončok <mhroncok@redhat.com> - 3.0-1
+- Update to 3.0 final
+
+* Tue Oct 15 2019 Miro Hrončok <mhroncok@redhat.com> - 3.0~b1-1
+- Update to 3.0b1 (rhbz#1761417)
+
+* Fri Oct 04 2019 Miro Hrončok <mhroncok@redhat.com> - 3.0~a1-1
+- Update to 3.0a1 (rhbz#1750709)
+- https://fedoraproject.org/wiki/Changes/Django3
+
+* Thu Sep 05 2019 Matthias Runge <mrunge@redhat.com> - 2.2.5-1
+- bugfix release 2.2.5 (rhbz#1747876)
+
+* Sun Aug 18 2019 Miro Hrončok <mhroncok@redhat.com> - 2.2.4-2
+- Rebuilt for Python 3.8
+
+* Tue Aug 06 2019 Matthias Runge <mrunge@redhat.com> - 2.2.4-1
+- fix CVE-2019-14235 (rhbz#1735784)
+- fix CVE-2019-14234 (rhbz#1735780)
+- fix CVE-2019-14233 (rhbz#1735775)
+- fix CVE-2019-14232 (rhbz#1735771)
+
+* Fri Jul 26 2019 Fedora Release Engineering <releng@fedoraproject.org> - 2.2.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Thu Jul 04 2019 Matthias Runge <mrunge@redhat.com> - 2.2.3-1
 - fix CVE-2019-12781 Incorrect HTTP detection with reverse-proxy connecting
   via HTTPS (rhbz#1726014)
 
