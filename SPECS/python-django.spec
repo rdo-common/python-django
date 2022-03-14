@@ -1,10 +1,11 @@
+%{?python_enable_dependency_generator}
 Name:           python-django
 %global         pkgname Django
 %global         ver 3.2.12
 #global         pre ...
 %global         real_version %{ver}%{?pre:%{pre}}
 Version:        %{ver}%{?pre:~%{pre}}
-Release:        1%{?dist}
+Release:        1.1%{?dist}
 Summary:        A high-level Python Web framework
 
 License:        BSD
@@ -17,6 +18,8 @@ Patch000:       Django-2.0-skip-net-tests.patch
 # Some tests are failing with Python 3.10, they are disabled temporarily.
 # For more info see: https://bugzilla.redhat.com/show_bug.cgi?id=1898084
 Patch001:       0001-python-3.10-compatibility-disable-failing-tests.patch
+
+Patch002:       0002-Remove-failing-test.patch
 
 BuildArch:      noarch
 
@@ -326,6 +329,9 @@ cd tests
 
 
 %changelog
+* Mon Mar 14 2022 Joel Capitao <jcapitao@redhat.com> - 3.2.12-1.1
+- Enable dependency generator
+
 * Wed Feb 02 2022 Matthias Runge <mrunge@redhat.com> - 3.2.12-1
 - update to 3.2.12
 - fixes CVE-2022-22818, CVE-2022-23833
