@@ -5,7 +5,7 @@ Name:           python-django
 #global         pre ...
 %global         real_version %{ver}%{?pre:%{pre}}
 Version:        %{ver}%{?pre:~%{pre}}
-Release:        1.1%{?dist}
+Release:        1.2%{?dist}
 Summary:        A high-level Python Web framework
 
 License:        BSD
@@ -77,6 +77,10 @@ BuildRequires:  python3-selenium
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-sqlparse >= 0.2.2
 BuildRequires:  python3-memcached
+
+%if 0%{?rhel} && 0%{?rhel} < 9
+Requires:       python3-importlib-metadata >= 1.7.0
+%endif
 
 Provides: bundled(jquery) = 2.2.3
 Provides: bundled(xregexp) = 2.0.0
@@ -329,6 +333,9 @@ cd tests
 
 
 %changelog
+* Wed Mar 23 2022 Joel Capitao <jcapitao@redhat.com> - 3.2.12-1.2
+- Add requires on importlib-metadata
+
 * Mon Mar 14 2022 Joel Capitao <jcapitao@redhat.com> - 3.2.12-1.1
 - Enable dependency generator
 
